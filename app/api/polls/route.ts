@@ -17,6 +17,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "At least 2 options are required" }, { status: 400 });
   }
 
-  const poll = createPoll(title, options);
+  const poll = await createPoll(title, options);
   return Response.json(poll, { status: 201 });
 }

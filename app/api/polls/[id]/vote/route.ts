@@ -13,7 +13,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/polls/[id]/
     return Response.json({ error: "voter_id is required" }, { status: 400 });
   }
 
-  const result = castVote(id, optionId, voterId.trim());
+  const result = await castVote(id, optionId, voterId.trim());
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: result.status });
   }

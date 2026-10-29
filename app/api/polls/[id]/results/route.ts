@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/polls/[i
   const bearer = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   const token = bearer || request.nextUrl.searchParams.get("token");
 
-  const result = getResults(id, token);
+  const result = await getResults(id, token);
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: result.status });
   }

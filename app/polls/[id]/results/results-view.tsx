@@ -20,23 +20,31 @@ export default function ResultsView() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const load = () =>
+    // Live tallies over Server-Sent Events; EventSource reconnects on its own
+    // when the server rotates the stream.
+    const source = new EventSource(
+      `/api/polls/${id}/results/stream?token=${encodeURIComponent(token ?? "")}`,
+    );
+
+    source.onmessage = (event) => {
+      const next: Results = JSON.parse(event.data);
+      // Snapshots can arrive out of order around reconnects; never go backwards.
+      setResults((prev) => (prev && prev.total_votes > next.total_votes ? prev : next));
+      setError(null);
+    };
+
+    // A non-2xx response (bad token, unknown poll) closes the source for good.
+    // Fetch the plain endpoint once to show the reason.
+    source.onerror = () => {
+      if (source.readyState !== EventSource.CLOSED) return;
       fetch(`/api/polls/${id}/results`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       }).then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
-          setResults(data);
-          setError(null);
-        } else {
-          setError(data.error);
-        }
+        if (!res.ok) setError((await res.json()).error);
       });
+    };
 
-    load();
-    // Poll for live tallies.
-    const interval = setInterval(load, 3000);
-    return () => clearInterval(interval);
+    return () => source.close();
   }, [id, token]);
 
   if (error && !results) {
