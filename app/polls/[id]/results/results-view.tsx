@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 
 type Results = {
@@ -57,21 +58,27 @@ export default function ResultsView() {
 
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-16">
-      <section className="mb-10 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
-        <p className="text-sm text-zinc-500">Share this code with voters</p>
-        <p className="mt-1 font-mono text-4xl font-semibold tracking-[0.3em]">{results.poll_id}</p>
-        <button
-          className="mt-3 text-sm text-zinc-500 underline hover:text-foreground"
-          onClick={() => {
-            navigator.clipboard.writeText(voteUrl);
-            setCopied(true);
-          }}
-        >
-          {copied ? "Link copied" : "Copy voting link"}
-        </button>
-        <p className="mt-3 text-xs text-zinc-500">
-          Bookmark this page — its URL is your private key to the results.
-        </p>
+      <section className="mb-10 flex flex-col items-center gap-5 rounded-xl border border-zinc-300 p-5 text-center sm:flex-row sm:items-start sm:text-left dark:border-zinc-700">
+        {/* White background + quiet zone so the code scans in dark mode too. */}
+        <div className="shrink-0 rounded-lg bg-white p-3">
+          <QRCodeSVG value={voteUrl} size={144} marginSize={0} title="Scan to vote" />
+        </div>
+        <div>
+          <p className="text-sm text-zinc-500">Scan to vote, or enter code</p>
+          <p className="mt-1 font-mono text-4xl font-semibold tracking-[0.3em]">{results.poll_id}</p>
+          <button
+            className="mt-3 text-sm text-zinc-500 underline hover:text-foreground"
+            onClick={() => {
+              navigator.clipboard.writeText(voteUrl);
+              setCopied(true);
+            }}
+          >
+            {copied ? "Link copied" : "Copy voting link"}
+          </button>
+          <p className="mt-3 text-xs text-zinc-500">
+            Bookmark this page — its URL is your private key to the results.
+          </p>
+        </div>
       </section>
 
       <h1 className="text-3xl font-semibold tracking-tight">{results.title}</h1>
